@@ -5,17 +5,18 @@ const int MOVEBRIGHT = 100;
 const int READPOTA = 101;
 const int READPOTB = 102;
 const int READDIST = 103;
+const int SCANCOM = 104;
 
 const int MOTORA1 = 7;
 const int MOTORA2 = 6;
 const int MOTORAPWM = 5;
 const int SLIDEPOTA = A0;
 const int STANDBYPIN = 8;
-const int MOTORB1 = 9;
-const int MOTORB2 = 10;
+const int MOTORB1 = 10;
+const int MOTORB2 = 9;
 const int MOTORBPWM = 11;
 const int SLIDEPOTB = A1;
-const int DISTPIN = A2;
+const int DISTPIN = A5;
 const int DELAY = 25;     // in milliseconds
 const int DUTY = 127;
 
@@ -46,32 +47,52 @@ void loop() {
   digitalWrite( STANDBYPIN, LOW );
 }
 
+void pushALeft() {
+  while( readPotA() > 64 ) {
+    moveALeft( 50 );
+    delay( 25 );
+  }
+}
+
+void pushBLeft() {
+  while( readPotB() > 64 ) {
+    moveBLeft( 50 );
+    delay( 25 );
+  }
+}
+
 void handleAction( int act ) {
   switch( act ) {
     case MOVEALEFT:
-    while( readPotA() > 100 ) {
+    while( readPotA() > 64 ) {
       moveALeft( 50 );
       delay( 50 );
     }
     break;
     
     case MOVEARIGHT:
-    while( readPotA() < 950 ) {
+    while( readPotA() < 960 ) {
       moveARight( 50 );
       delay( 50 );
     }
     break;
     
     case MOVEBLEFT:
-    moveBLeft( 50 );
+    while( readPotB() > 64 ) {
+      moveBLeft( 50 );
+      delay( 50 );
+    }
     break;
     
     case MOVEBRIGHT:
-    moveBRight( 50 );
+    while( readPotB() < 960 ) {
+      moveBRight( 50 );
+      delay( 50 );
+    }
     break;
     
     case READPOTA:
-    readPotA();
+    Serial.println( readPotA() );
     break;
     
     case READPOTB:
@@ -79,7 +100,58 @@ void handleAction( int act ) {
     break;
     
     case READDIST:
-    readDist();
+    Serial.println( readDist() );
+    break;
+    
+    case SCANCOM:
+    Serial.println( "BEGIN SCAN" );
+    Serial.println( "x\ty\tz");
+    while( readPotB() < 960 ) {
+      while( readPotA() < 960 ) {
+        moveARight( 50 );
+        delay( 150 );
+        Serial.print( readPotA() );
+        Serial.print( "\t" );
+        Serial.print( readPotB() );
+        Serial.print( "\t" );
+        Serial.print( readDist() );
+        Serial.println();
+        delay( 150 );
+      }
+      moveBRight( 50 );
+      delay( 150 );
+      Serial.print( readPotA() );
+      Serial.print( "\t" );
+      Serial.print( readPotB() );
+      Serial.print( "\t" );
+      Serial.print( readDist() );
+      Serial.println();
+      delay( 150 );
+      
+      while( readPotA() > 64 ) {
+        moveALeft( 50 );
+        delay( 150 );
+        Serial.print( readPotA() );
+        Serial.print( "\t" );
+        Serial.print( readPotB() );
+        Serial.print( "\t" );
+        Serial.print( readDist() );
+        Serial.println();
+        delay( 150 );
+      }
+      moveBRight( 50 );
+      delay( 150 );
+      Serial.print( readPotA() );
+      Serial.print( "\t" );
+      Serial.print( readPotB() );
+      Serial.print( "\t" );
+      Serial.print( readDist() );
+      Serial.println();
+      delay( 150 );
+    }
+    Serial.println( "END" );
+    pushALeft
+    pushBLeft();
     break;
     
     default:
@@ -137,17 +209,13 @@ void moveBRight( int del ) {
 }
 
 int readPotA() {
-  int val = analogRead( SLIDEPOTA );
-  Serial.println( val );
-  return val;
+  return analogRead( SLIDEPOTA );
 }
 
 int readPotB() {
-  int val = analogRead( SLIDEPOTB );
-  Serial.println( val );
-  return val;
+  return analogRead( SLIDEPOTB );
 }
 
-void readDist() {
-  Serial.println( analogRead( DISTPIN ) );
+int readDist() {
+  return analogRead( DISTPIN );
 }
